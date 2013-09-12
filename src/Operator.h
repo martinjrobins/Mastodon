@@ -59,60 +59,64 @@ private:
 	double total_time;
 };
 
+
+
 template<typename Multivector>
-class OperatorList: public Operator<Multivector> {
-public:
-	OperatorList() {}
-	OperatorList(Operator& o) {
-		list.push_back(&o);
-	}
-	OperatorList(std::initializer_list<Operator<Multivector>*> arg) {
-		for (auto i: arg) {
-			list.push_back(i);
-		}
+Operator<Multivector>::Operator() {
+	total_time = 0;
+}
 
-	}
-	virtual ~OperatorList() {}
+template<typename Multivector>
+void Operator<Multivector>::resume_timer() {
+	timer.start();
+}
 
-	static std::shared_ptr<Operator<Multivector> > New() {
-		return std::shared_ptr<Operator<Multivector> >(new OperatorList());
-	}
+template<typename Multivector>
+void Operator<Multivector>::execute(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output) {
+	Operator::resume_timer();
+	execute_impl(input,output);
+	Operator::stop_timer();
+}
 
-	void push_back(Operator<Multivector>* const i) {
-		list.push_back(i);
-	}
-	void push_back(const OperatorList& i) {
-		for (Operator* j: i.list) {
-			list.push_back(j);
-		}
-	}
+template<typename Multivector>
+void Operator<Multivector>::reset() {
+	reset_impl();
+}
 
-	std::vector<Operator<Multivector>*>& get_operators() {return list;}
+template<typename Multivector>
+void Operator<Multivector>::stop_timer() {
+	timer.stop();
+	//global_timer.stop();
+	const double time = (timer.elapsed().user + timer.elapsed().user)/double(1000000000);
+	total_time += time;
+}
 
-protected:
-	virtual void print_impl(std::ostream& out) const {
-		out << "List of "<<list.size()<< " operators:"<< std::endl;
-		for (auto i : list) {
-			out << "\t" << *i << " ("<<i->get_time_string()<<")"<<std::endl;
-		}
-		out << "End list of "<<list.size()<< " operators";
 
-	}
-	virtual void execute_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output) {
-		for (auto i : list) {
-			i->execute_impl(input,output);
-		}
-	}
-	virtual void reset_impl() {
-		for (auto i : list) {
-			i->reset();
-		}
-	}
+template <typename T>
+const std::string to_string(const T& data)
+{
+   std::ostringstream conv;
+   conv << data;
+   return conv.str();
+}
 
-	std::vector<Operator*> list;
-};
+template<typename Multivector>
+std::string Operator<Multivector>::get_time_string() const {
+	return "Time to execute: " + to_string(total_time) + " s";
+}
 
-#include "Operator.impl.h"
+template<typename Multivector>
+void Operator<Multivector>::reset_impl() {
+}
+
+template<typename Multivector>
+void Operator<Multivector>::execute_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output) {
+}
+
+template<typename Multivector>
+void Operator<Multivector>::print_impl(std::ostream& out) const {
+	out << "Default Operator";
+}
 
 }
 #endif /* OPERATOR_H_ */
