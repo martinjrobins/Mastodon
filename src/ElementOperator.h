@@ -29,7 +29,7 @@
 
 namespace Mastodon {
 
-template<typename T, typename Traits=BaseTraits<T>, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 class ElementOperator: public Operator<T,Traits> {
 public:
 	DEFINE_TYPEDEFS
@@ -46,7 +46,7 @@ private:
 	const std::string name;
 };
 
-template<typename T, typename Traits=BaseTraits<T> >
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 inline void ElementOperator<T,Traits>::execute_impl(
 		multivector_type input,
 		multivector_type output) {
@@ -62,13 +62,13 @@ inline void ElementOperator<T,Traits>::execute_impl(
 	}
 }
 
-template<typename T, typename Traits = BaseTraits<T>, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 inline void ElementOperator<T, Traits, F>::print_impl(
 		std::ostream& out) const {
 	out << name;
 }
 
-template<typename T, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 std::shared_ptr<Operator<T,Traits> > create_element_operator(F function, const std::string name, std::shared_ptr<T> example_multi_vector) {
 	return std::shared_ptr<ElementOperator<T,Traits,F> >(ElementOperator<T,Traits,F>(function,name));
 }

@@ -29,7 +29,7 @@
 
 namespace Mastodon {
 
-template<typename T, typename Traits=BaseTraits<T>, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 class RowOperator: public Operator<T,Traits> {
 public:
 	DEFINE_TYPEDEFS
@@ -46,7 +46,7 @@ private:
 	const std::string name;
 };
 
-template<typename T, typename Traits=BaseTraits<T> >
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 inline void RowOperator<T,Traits>::execute_impl(
 		multivector_type input,
 		multivector_type output) {
@@ -56,13 +56,13 @@ inline void RowOperator<T,Traits>::execute_impl(
 	}
 }
 
-template<typename T, typename Traits = BaseTraits<T>, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 inline void RowOperator<T, Traits, F>::print_impl(
 		std::ostream& out) const {
 	out << name;
 }
 
-template<typename T, typename F>
+template< typename F, typename T, typename Traits=BaseTraits<T> >
 std::shared_ptr<Operator<T,Traits> > create_row_operator(F function, const std::string name, std::shared_ptr<T> example_multi_vector) {
 	return std::shared_ptr<RowOperator<T,Traits,F> >(RowOperator<T,Traits,F>(function,name));
 }

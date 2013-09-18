@@ -28,6 +28,10 @@
 #define OPERATOR_PREAMBLE \
 	template<typename T, typename Traits=BaseTraits<T> >
 
+#define FUNCTOR_OPERATOR_PREAMBLE \
+	template< typename F, typename T, typename Traits=BaseTraits<T>>
+
+
 #define DEFINE_TYPEDEFS \
 	typedef Traits::multivector_type multivector_type; \
 	typedef Traits::row_type row_type; \
