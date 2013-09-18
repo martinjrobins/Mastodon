@@ -32,10 +32,7 @@ namespace Mastodon {
 template<typename T, typename Traits=BaseTraits<T> >
 class ElementOperator: public RowOperator<T,Traits> {
 public:
-	typedef Traits::multivector_type multivector_type;
-	typedef Traits::row_type row_type;
-	typedef Traits::element_type element_type;
-	typedef Traits::index_type index_type;
+	DEFINE_TYPEDEFS
 
 	ElementOperator() {}
 	virtual ~ElementOperator() {};
@@ -50,17 +47,28 @@ protected:
 
 
 
-template<typename Multivector>
-inline void Mastodon::ElementRowOperator<Multivector>::execute_row_impl(
+template<typename T, typename Traits=BaseTraits<T> >
+inline void ElementOperator<T,Traits>::execute_row_impl(
 		multivector_type input,
 		row_type output,
 		index_type i) {
 	index_type n = Traits::get_number_of_elements(output);
+	row_type input_row = Traits::get_row(input,i);
 	for (index_type j = 0; j < n; ++j) {
-		row_type row = Traits::get_row(output,j);
-		execute_element_impl(Traits::get_element(input,i,j),Traits::get_element(row,j));
+		execute_element_impl(Traits::get_element(input_row,j),Traits::get_element(output,j));
 	}
 }
+
+template<typename T, typename Traits=BaseTraits<T> >
+class ElementOperatorImpl: public ElementOperator<T,Traits> {
+	typedef const std::function <element_type (element_type)>& function_type;
+	ElementOperatorImpl(function_type f):f(f) {}
+protected:
+	virtual void execute_element_impl(element_type input, element_type& output) {output = f(input);}
+private:
+	function_type f;
+};
+
 
 }
 

@@ -32,14 +32,10 @@ namespace Mastodon {
 template<typename T, typename Traits=BaseTraits<T> >
 class RowOperator: public Operator<T,Traits> {
 public:
-	typedef Traits::multivector_type multivector_type;
-	typedef Traits::row_type row_type;
-	typedef Traits::element_type element_type;
-	typedef Traits::index_type index_type;
+	DEFINE_TYPEDEFS
 
 	RowOperator() {}
 	virtual ~RowOperator() {};
-
 
 protected:
 	virtual void execute_impl(multivector_type input, multivector_type output);
@@ -47,8 +43,8 @@ protected:
 	virtual void print_impl(std::ostream& out) const = 0;
 };
 
-template<typename T>
-inline void Mastodon::RowOperator<T>::execute_impl(
+template<typename T, typename Traits=BaseTraits<T> >
+inline void RowOperator<T,Traits>::execute_impl(
 		multivector_type input,
 		multivector_type output) {
 	index_type n = Traits::get_number_of_rows(output);

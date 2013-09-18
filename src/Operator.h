@@ -25,7 +25,14 @@
 #ifndef OPERATOR_H_
 #define OPERATOR_H_
 
-//#define DEFINE_OPERATOR(class_name,base_class_name) \
+#define OPERATOR_PREAMBLE \
+	template<typename T, typename Traits=BaseTraits<T> >
+
+#define DEFINE_TYPEDEFS \
+	typedef Traits::multivector_type multivector_type; \
+	typedef Traits::row_type row_type; \
+	typedef Traits::element_type element_type; \
+	typedef Traits::index_type index_type; \
 
 
 #include <boost/timer/timer.hpp>
@@ -55,11 +62,7 @@ struct BaseTraits {
 template<typename T, typename Traits=BaseTraits<T> >
 class Operator {
 public:
-	typedef Traits::multivector_type multivector_type;
-	typedef Traits::row_type row_type;
-	typedef Traits::element_type element_type;
-	typedef Traits::index_type index_type;
-
+	DEFINE_TYPEDEFS
 
 	Operator();
 	virtual ~Operator() {};
