@@ -37,6 +37,10 @@ public:
 	NeighbourOperator(F function, const std::string& name):function(function),name(name) {}
 	virtual ~NeighbourOperator() {};
 
+	void set_domain(const Vect3d& low, const Vect3d& high, double max_interaction_radius);
+	void calculate_neighbours(multivector_type input_positions, multivector_type output_positions);
+)
+
 protected:
 	virtual void execute_impl(multivector_type input, multivector_type output);
 	virtual void print_impl(std::ostream& out) const;
@@ -44,6 +48,7 @@ protected:
 private:
 	F function;
 	const std::string name;
+	BucketSort neighbour_search;
 };
 
 template< typename F, typename T, typename Traits=BaseTraits<T> >
@@ -71,8 +76,29 @@ std::shared_ptr<Operator<T,Traits> > create_neighbour_operator(F function, const
 	return std::shared_ptr<NeighbourOperator<T,Traits,F> >(NeighbourOperator<T,Traits,F>(function,name));
 }
 
+template<typename F, typename T, typename Traits = BaseTraits<T>>
+inline void NeighbourOperator<F, T, Traits>::set_domain(
+		const Vect3d& low, const Vect3d& high, double max_interaction_radius) {
+	neighbour_search.reset(low,high,max_interaction_radius);
+}
+
+template<typename F, typename T, typename Traits = BaseTraits<T>>
+inline void NeighbourOperator<F, T, Traits>::calculate_neighbours(
+		multivector_type input_positions, multivector_type output_positions) {
+	index_type nr = Traits::get_number_of_rows(output);
+	index_type ne = Traits::get_number_of_elments(Traits::get_row(output,0));
+
+	ASSERT(ne==3,"not a 3d position multivector");
+
+	for (index_type i = 0; i < nr; ++i) {}
 
 }
+
+
+}
+
+
+
 
 
 #endif /* NEIGHBOUROPERATOR_H_ */
