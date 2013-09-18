@@ -25,6 +25,8 @@
 #ifndef OPERATOR_H_
 #define OPERATOR_H_
 
+//#define DEFINE_OPERATOR(class_name,base_class_name) \
+
 
 #include <boost/timer/timer.hpp>
 #include <initializer_list>
@@ -32,12 +34,36 @@
 
 namespace Mastodon {
 
-template<typename Multivector>
+template<typename T>
+struct BaseTraits {
+	typedef std::shared_ptr<T> multivector_type;
+	typedef std::shared_ptr<T::value_type> row_type;
+	typedef T::value_type::value_type element_type;
+	typedef unsigned int index_type;
+
+	static index_type get_number_of_rows(multivector_type v) {return v->size();}
+	static index_type get_number_of_elements(row_type r) {return r->size();}
+	static row_type get_row(multivector_type v, int i) {return row_type(*v[i]);}
+	static element_type& get_element(row_type& v, int i) {return *v[i];}
+	static element_type& get_element(multivector_type& v, int i, int j) {return get_element(get_row(i),j);}
+};
+
+
+
+
+
+template<typename T, typename Traits=BaseTraits<T> >
 class Operator {
 public:
+	typedef Traits::multivector_type multivector_type;
+	typedef Traits::row_type row_type;
+	typedef Traits::element_type element_type;
+	typedef Traits::index_type index_type;
+
+
 	Operator();
 	virtual ~Operator() {};
-	void execute(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output);
+	void execute(multivector_type input, multivector_type output);
 	std::string get_time_string() const;
 	void reset();
 	double get_time() const {return time;}
@@ -47,9 +73,9 @@ public:
 	}
 
 protected:
-	virtual void reset_impl();
-	virtual void execute_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output);
-	virtual void print_impl(std::ostream& out) const;
+	virtual void reset_impl() = 0;
+	virtual void execute_impl(multivector_type input, multivector_type output) = 0;
+	virtual void print_impl(std::ostream& out) const = 0;
 
 private:
 	void resume_timer();
@@ -61,30 +87,30 @@ private:
 
 
 
-template<typename Multivector>
-Operator<Multivector>::Operator() {
+template<typename T>
+Operator<T>::Operator() {
 	total_time = 0;
 }
 
-template<typename Multivector>
-void Operator<Multivector>::resume_timer() {
+template<typename T>
+void Operator<T>::resume_timer() {
 	timer.start();
 }
 
-template<typename Multivector>
-void Operator<Multivector>::execute(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output) {
+template<typename T>
+void Operator<T>::execute(multivector_type input, multivector_type output) {
 	Operator::resume_timer();
 	execute_impl(input,output);
 	Operator::stop_timer();
 }
 
-template<typename Multivector>
-void Operator<Multivector>::reset() {
+template<typename T>
+void Operator<T>::reset() {
 	reset_impl();
 }
 
-template<typename Multivector>
-void Operator<Multivector>::stop_timer() {
+template<typename T>
+void Operator<T>::stop_timer() {
 	timer.stop();
 	//global_timer.stop();
 	const double time = (timer.elapsed().user + timer.elapsed().user)/double(1000000000);
@@ -100,23 +126,11 @@ const std::string to_string(const T& data)
    return conv.str();
 }
 
-template<typename Multivector>
-std::string Operator<Multivector>::get_time_string() const {
+template<typename T>
+std::string Operator<T>::get_time_string() const {
 	return "Time to execute: " + to_string(total_time) + " s";
 }
 
-template<typename Multivector>
-void Operator<Multivector>::reset_impl() {
-}
-
-template<typename Multivector>
-void Operator<Multivector>::execute_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output) {
-}
-
-template<typename Multivector>
-void Operator<Multivector>::print_impl(std::ostream& out) const {
-	out << "Default Operator";
-}
 
 }
 #endif /* OPERATOR_H_ */

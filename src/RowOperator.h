@@ -25,42 +25,36 @@
 #ifndef ROWOPERATOR_H_
 #define ROWOPERATOR_H_
 
+#include "Operator.h"
+
 namespace Mastodon {
 
-template<typename Multivector>
-class RowOperator {
+template<typename T, typename Traits=BaseTraits<T> >
+class RowOperator: public Operator<T,Traits> {
 public:
+	typedef Traits::multivector_type multivector_type;
+	typedef Traits::row_type row_type;
+	typedef Traits::element_type element_type;
+	typedef Traits::index_type index_type;
+
 	RowOperator() {}
 	virtual ~RowOperator() {};
 
 
 protected:
-	virtual void execute_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector> output);
-	virtual void execute_row_impl(std::shared_ptr<Multivector> input, std::shared_ptr<Multivector::RowType> output);
-	virtual void print_impl(std::ostream& out) const;
+	virtual void execute_impl(multivector_type input, multivector_type output);
+	virtual void execute_row_impl(multivector_type input, row_type output, index_type i) = 0;
+	virtual void print_impl(std::ostream& out) const = 0;
 };
 
-template<typename Multivector>
-inline void Mastodon::RowOperator<Multivector>::execute_impl(
-		std::shared_ptr<Multivector> input,
-		std::shared_ptr<Multivector> output) {
-	foreach(output) {
-		execute_row_impl(input,output[i]);
+template<typename T>
+inline void Mastodon::RowOperator<T>::execute_impl(
+		multivector_type input,
+		multivector_type output) {
+	index_type n = Traits::get_number_of_rows(output);
+	for (index_type i = 0; i < n; ++i) {
+		execute_row_impl(input,Traits::get_row(output,i),i);
 	}
-}
-
-template<typename Multivector>
-inline void Mastodon::RowOperator<Multivector>::print_impl(
-		std::ostream& out) const {
-	out << "Row Operator";
-}
-
-
-
-template<typename Multivector>
-inline void Mastodon::RowOperator<Multivector>::execute_row_impl(
-		std::shared_ptr<Multivector> input,
-		std::shared_ptr<Multivector::RowType> output) {
 }
 
 }
