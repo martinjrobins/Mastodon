@@ -1,5 +1,5 @@
 /*
- * ElementOperator.h
+ * NeighbourOperator.h
  * 
  * Copyright 2013 Martin Robinson
  *
@@ -18,24 +18,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Mastodon.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  Created on: 12 Sep 2013
+ *  Created on: 18 Sep 2013
  *      Author: robinsonm
  */
 
-#ifndef ELEMENTOPERATOR_H_
-#define ELEMENTOPERATOR_H_
+#ifndef NEIGHBOUROPERATOR_H_
+#define NEIGHBOUROPERATOR_H_
 
 #include "Operator.h"
 
 namespace Mastodon {
 
 template<typename T, typename Traits=BaseTraits<T>, typename F>
-class ElementOperator: public Operator<T,Traits> {
+class NeighbourOperator: public Operator<T,Traits> {
 public:
 	DEFINE_TYPEDEFS
 
-	ElementOperator(F function, const std::string& name):function(function),name(name) {}
-	virtual ~ElementOperator() {};
+	NeighbourOperator(F function, const std::string& name):function(function),name(name) {}
+	virtual ~NeighbourOperator() {};
 
 protected:
 	virtual void execute_impl(multivector_type input, multivector_type output);
@@ -47,34 +47,32 @@ private:
 };
 
 template<typename T, typename Traits=BaseTraits<T> >
-inline void ElementOperator<T,Traits>::execute_impl(
+inline void NeighbourOperator<T,Traits>::execute_impl(
 		multivector_type input,
 		multivector_type output) {
 	index_type nr = Traits::get_number_of_rows(output);
 	index_type ne = Traits::get_number_of_elments(Traits::get_row(output,0));
 
 	for (index_type i = 0; i < nr; ++i) {
-		row_type output_row = Traits::get_row(output,i);
-		row_type input_row = Traits::get_row(input,i);
-		for (int j = 0; j < ne; ++j) {
-			Traits::get_element(output_row,j) = function(Traits::get_element(input_row,j));
-		}
+		find_neighbours(i)
+		construct multivector of only neighbours
+		function(output_row,multivector_of_neighbours_input)
 	}
 }
 
 template<typename T, typename Traits = BaseTraits<T>, typename F>
-inline void ElementOperator<T, Traits, F>::print_impl(
+inline void NeighbourOperator<T, Traits, F>::print_impl(
 		std::ostream& out) const {
 	out << name;
 }
 
 template<typename T, typename F>
-std::shared_ptr<Operator<T,Traits> > create_element_operator(F function, const std::string name, std::shared_ptr<T> example_multi_vector) {
-	return std::shared_ptr<ElementOperator<T,Traits,F> >(ElementOperator<T,Traits,F>(function,name));
+std::shared_ptr<Operator<T,Traits> > create_neighbour_operator(F function, const std::string name, std::shared_ptr<T> example_multi_vector) {
+	return std::shared_ptr<NeighbourOperator<T,Traits,F> >(NeighbourOperator<T,Traits,F>(function,name));
 }
 
 
 }
 
 
-#endif /* ELEMENTOPERATOR_H_ */
+#endif /* NEIGHBOUROPERATOR_H_ */

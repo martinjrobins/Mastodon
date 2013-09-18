@@ -29,18 +29,21 @@
 
 namespace Mastodon {
 
-template<typename T, typename Traits=BaseTraits<T> >
+template<typename T, typename Traits=BaseTraits<T>, typename F>
 class RowOperator: public Operator<T,Traits> {
 public:
 	DEFINE_TYPEDEFS
 
-	RowOperator() {}
+	RowOperator(F function, const std::string& name):function(function),name(name) {}
 	virtual ~RowOperator() {};
 
 protected:
 	virtual void execute_impl(multivector_type input, multivector_type output);
-	virtual void execute_row_impl(multivector_type input, row_type output, index_type i) = 0;
-	virtual void print_impl(std::ostream& out) const = 0;
+	virtual void print_impl(std::ostream& out) const;
+
+private:
+	F function;
+	const std::string name;
 };
 
 template<typename T, typename Traits=BaseTraits<T> >
@@ -49,9 +52,23 @@ inline void RowOperator<T,Traits>::execute_impl(
 		multivector_type output) {
 	index_type n = Traits::get_number_of_rows(output);
 	for (index_type i = 0; i < n; ++i) {
-		execute_row_impl(input,Traits::get_row(output,i),i);
+		function(input,Traits::get_row(output,i),i);
 	}
 }
 
+template<typename T, typename Traits = BaseTraits<T>, typename F>
+inline void RowOperator<T, Traits, F>::print_impl(
+		std::ostream& out) const {
+	out << name;
 }
+
+template<typename T, typename F>
+std::shared_ptr<Operator<T,Traits> > create_row_operator(F function, const std::string name, std::shared_ptr<T> example_multi_vector) {
+	return std::shared_ptr<RowOperator<T,Traits,F> >(RowOperator<T,Traits,F>(function,name));
+}
+
+}
+
+
+
 #endif /* ROWOPERATOR_H_ */
