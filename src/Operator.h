@@ -32,35 +32,12 @@
 	template< typename F, typename T, typename Traits=BaseTraits<T>>
 
 
-#define DEFINE_TYPEDEFS \
-	typedef Traits::multivector_type multivector_type; \
-	typedef Traits::row_type row_type; \
-	typedef Traits::element_type element_type; \
-	typedef Traits::index_type index_type; \
-
-
 #include <boost/timer/timer.hpp>
 #include <initializer_list>
 #include <memory>
+#include "Traits.h"
 
 namespace Mastodon {
-
-template<typename T>
-struct BaseTraits {
-	typedef std::shared_ptr<T> multivector_type;
-	typedef std::shared_ptr<T::value_type> row_type;
-	typedef T::value_type::value_type element_type;
-	typedef unsigned int index_type;
-
-	static index_type get_number_of_rows(multivector_type v) {return v->size();}
-	static index_type get_number_of_elements(row_type r) {return r->size();}
-	static row_type get_row(multivector_type v, int i) {return row_type(*v[i]);}
-	static element_type& get_element(row_type& v, int i) {return *v[i];}
-	static element_type& get_element(multivector_type& v, int i, int j) {return get_element(get_row(i),j);}
-};
-
-
-
 
 
 template<typename T, typename Traits=BaseTraits<T> >
