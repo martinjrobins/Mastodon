@@ -27,32 +27,22 @@
 
 #include "Traits.h"
 
-template<typename F, typename T, typename Traits=BaseTraits<T> >
-topology_type sum_over_neighbours(multivector_type input, multivector_type output, F function) {
+template<typename F, typename T1, typename T2, typename Traits=TopologyTraits<T1,T2> >
+void for_each_neighbours(multivector_type input, multivector_type output, F function, topology_type topology=topology_type()) {
 	index_type nr = Traits::get_number_of_rows(output);
-	index_type ne = Traits::get_number_of_elments(Traits::get_row(output,0));
-
+	Traits::embed_source_positions(topology,input);
 	for (index_type i = 0; i < nr; ++i) {
-		find_neighbours(i)
-						construct multivector of only neighbours
-						function(output_row,multivector_of_neighbours_input)
+		multivector_type neighbours = Traits::find_neighbours(topology,output,i);
+		function(Traits::get_row(output,i),neighbours,i);
 	}
 }
 
-
-template<typename F, typename T, typename Traits=BaseTraits<T> >
-void for_each_stencil(multivector_type input, multivector_type output, F function, index_type stencil) {
-	index_type n = Traits::get_number_of_rows(output);
-	for (index_type i = 0; i < n; ++i) {
-		function(input,Traits::get_row(output,i),i);
-	}
-}
 
 template<typename F, typename T, typename Traits=BaseTraits<T> >
 void for_each(multivector_type input, multivector_type output, F function) {
 	index_type n = Traits::get_number_of_rows(output);
 	for (index_type i = 0; i < n; ++i) {
-		function(input,Traits::get_row(output,i),i);
+		function(Traits::get_row(output,i),Traits::get_row(output,i),i);
 	}
 }
 

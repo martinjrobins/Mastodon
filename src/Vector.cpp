@@ -1,5 +1,5 @@
 /*
- * SpatialMultivector.h
+ * Vector.cpp
  * 
  * Copyright 2013 Martin Robinson
  *
@@ -18,22 +18,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Mastodon.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  Created on: 19 Sep 2013
+ *  Created on: 20 Sep 2013
  *      Author: robinsonm
  */
 
-#ifndef SPATIALMULTIVECTOR_H_
-#define SPATIALMULTIVECTOR_H_
-
-#include "Traits.h"
+#include "Vector.h"
 
 namespace Mastodon {
 
-template<typename T, typename Traits=BaseTraits<T> >
-class SpatialMultivector {
-public:
-	SpatialMultivector();
-};
+Vector::Vector() {
+	// TODO Auto-generated constructor stub
 
-} /* namespace Moirai */
-#endif /* SPATIALMULTIVECTOR_H_ */
+}
+
+} /* namespace Mastodon */

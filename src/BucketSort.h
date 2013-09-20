@@ -25,27 +25,30 @@
 #ifndef BUCKETSORT_H_
 #define BUCKETSORT_H_
 
-#include "Vector.h"
 #include "Log.h"
-#include <vector>
-#include <iostream>
+#include "Traits.h"
 
 namespace Mastodon {
 
 const int CELL_EMPTY = -1;
 
+template<typename T, typename Traits=MultivectorTraits<T> >
 class BucketSort {
 public:
+	typedef Traits::position_type Vect3d;
+	typedef Vector<bool> Vect3b;
+	typedef Vector<int> Vect3i;
+
 	BucketSort():
 			low(0),high(0),domain_size(high-low),periodic(false) {
 			LOG(2,"Creating bucketsort data structure with lower corner = "<<low<<" and upper corner = "<<high);
-			const double dx = (high-low).maxCoeff()/10.0;
+			const double dx = (high-low).max()/10.0;
 			reset(low, high, dx);
 		}
 	BucketSort(Vect3d low, Vect3d high, Vect3b periodic):
 		low(low),high(high),domain_size(high-low),periodic(periodic) {
 		LOG(2,"Creating bucketsort data structure with lower corner = "<<low<<" and upper corner = "<<high);
-		const double dx = (high-low).maxCoeff()/10.0;
+		const double dx = (high-low).max()/10.0;
 		reset(low, high, dx);
 	}
 
@@ -53,7 +56,8 @@ public:
 	inline const Vect3d& get_low() {return low;}
 	inline const Vect3d& get_high() {return high;}
 
-	void embed_points(std::vector<Vect3d> &positions);
+	void embed_source_positions(Traits::multivector_type &positions);
+	Traits::multivector_type find_neighbours(Traits::multivector_type destination, Traits::index_type i);
 	std::vector<int>& find_broadphase_neighbours(const Vect3d& r, const int my_index, const bool self);
 
 	Vect3d correct_position_for_periodicity(const Vect3d& source_r, const Vect3d& to_correct_r);
@@ -64,7 +68,7 @@ private:
 		return vect[0] * num_cells_along_yz + vect[1] * num_cells_along_axes[1] + vect[2];
 	}
 	inline int find_cell_index(const Vect3d &r) {
-		const Vect3i celli = ((r-low).cwiseProduct(inv_cell_size) + Vect3d(1.0,1.0,1.0)).cast<int>();
+		const Vect3i celli = ((r-low)*(inv_cell_size) + Vect3d(1.0,1.0,1.0));
 		ASSERT((celli[0] >= 0) && (celli[0] < num_cells_along_axes[0]), "position is outside of x-range");
 		ASSERT((celli[1] >= 0) && (celli[1] < num_cells_along_axes[1]), "position is outside of y-range");
 		ASSERT((celli[2] >= 0) && (celli[2] < num_cells_along_axes[2]), "position is outside of z-range");

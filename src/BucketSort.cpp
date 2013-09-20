@@ -89,8 +89,10 @@ void BucketSort::reset(const Vect3d& _low, const Vect3d& _high, double _max_inte
 	}
 }
 
-void BucketSort::embed_points(std::vector<Vect3d>& positions) {
-	const unsigned int n = positions.size();
+void embed_source_positions(Traits::multivector_type &positions);
+
+void BucketSort::embed_source_positions(Traits::multivector_type &source) {
+	const unsigned int n = Traits::get_number_of_rows(source);
 	linked_list.assign(n, CELL_EMPTY);
 	const bool particle_based = dirty_cells.size() < cells.size();
 	if (particle_based) {
@@ -103,7 +105,7 @@ void BucketSort::embed_points(std::vector<Vect3d>& positions) {
 
 	dirty_cells.clear();
 	for (int i = 0; i < n; ++i) {
-		const int celli = find_cell_index(positions[i]);
+		const int celli = find_cell_index(Traits::get_position_vector(source,i));
 		const int cell_entry = cells[celli];
 
 		// Insert into own cell
