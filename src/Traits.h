@@ -36,11 +36,18 @@ struct MultivectorTraits {
 	typedef unsigned int index_type;
 	typedef element_type interaction_radius_type;
 
-	static index_type get_number_of_rows(multivector_type v) {return v->size();}
-	static index_type get_number_of_elements(row_type r) {return r->size();}
+	static index_type get_number_of_rows(const multivector_type v) {return v->size();}
+	static index_type get_number_of_elements(const row_type& r) {return r->size();}
 	static row_type& get_row(multivector_type v, int i) {return *v[i];}
 	static element_type& get_element(row_type& v, int i) {return *v[i];}
 	static element_type& get_element(multivector_type& v, int i, int j) {return get_element(get_row(i),j);}
+
+	static void add_row(multivector_type v, const row_type& r) {
+		v.push_back(r);
+	}
+	static void remove_last_row(multivector_type v) {
+		v.pop_back();
+	}
 
 	static position_type get_position_vector(row_type row) {
 		return position_type(get_element(row,0),get_element(row,1),get_element(row,2));

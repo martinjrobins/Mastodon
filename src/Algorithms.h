@@ -48,4 +48,5 @@ void for_each(multivector_type input, multivector_type output, F function) {
 
 
 
+
 #endif /* ALGORITHMS_H_ */
