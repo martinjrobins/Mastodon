@@ -36,6 +36,7 @@ template<typename T, typename Traits=MultivectorTraits<T> >
 class BucketSort {
 public:
 	typedef Traits::position_type Vect3d;
+	typedef Traits::multivector_type multivector_type;
 	typedef Vector<bool> Vect3b;
 	typedef Vector<int> Vect3i;
 
@@ -56,9 +57,9 @@ public:
 	inline const Vect3d& get_low() {return low;}
 	inline const Vect3d& get_high() {return high;}
 
-	void embed_source_positions(Traits::multivector_type &positions);
-	Traits::multivector_type find_neighbours(Traits::multivector_type destination, Traits::index_type i);
-	std::vector<int>& find_broadphase_neighbours(const Vect3d& r, const int my_index, const bool self);
+	void embed_source_positions(multivector_type &positions);
+	multivector_type find_neighbours(multivector_type destination, Traits::index_type i);
+	//std::vector<int>& find_broadphase_neighbours(const Vect3d& r, const int my_index, const bool self);
 
 	Vect3d correct_position_for_periodicity(const Vect3d& source_r, const Vect3d& to_correct_r);
 	Vect3d correct_position_for_periodicity(const Vect3d& to_correct_r);

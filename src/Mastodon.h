@@ -25,7 +25,7 @@
 #ifndef MASTODON_H_
 #define MASTODON_H_
 
-#include "Operator.h"
+#include "Algorithms.h"
 
 
 #endif /* MASTODON_H_ */
