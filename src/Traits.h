@@ -69,6 +69,25 @@ struct TopologyTraits: MultivectorTraits<T1> {
 	typedef Traits::interaction_radius_type interaction_radius_type;
 
 	typedef std::shared_ptr<T2> topology_type;
+	typedef unsigned int id_type;
+	typedef std::vector<id_type> id_container_type;
+
+	static void begin_fill(topology_type topology, position_type lower_left_corner, position_type upper_right_corner) {
+	}
+
+	static void finalise_fill(topology_type topology) {
+	}
+
+	static void restart_fill(topology_type topology) {
+	}
+
+	static void embed_point(topology_type topology, position_type position, id_type id) {
+			topology.embed_source_positions(source);
+		}
+
+	static id_container_type find_neighbours(topology_type topology, position_type position) {
+			return topology.find_neighbours(destination,i);
+		}
 
 	static void embed_source_positions(topology_type topology, multivector_type source) {
 		topology.embed_source_positions(source);
