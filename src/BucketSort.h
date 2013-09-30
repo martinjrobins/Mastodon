@@ -43,6 +43,8 @@ public:
 	typedef Vector<bool> Vect3b;
 	typedef Vector<int> Vect3i;
 
+	struct iterator;
+
 	BucketSort():
 			low(0),high(0),domain_size(high-low),periodic(false) {
 			LOG(2,"Creating bucketsort data structure with lower corner = "<<low<<" and upper corner = "<<high);
@@ -60,8 +62,10 @@ public:
 	inline const Vect3d& get_low() {return low;}
 	inline const Vect3d& get_high() {return high;}
 
-	void embed_source_positions(multivector_type& positions);
-	multivector_type find_broadphase_neighbours(Vect3d& position, row_type& row);
+	void embed_source_positions(multivector_type& input);
+
+	iterator end() {return iterator(0);}
+	iterator get_broadphase_neighbours(Vect3d& position);
 	//std::vector<int>& find_broadphase_neighbours(const Vect3d& r, const int my_index, const bool self);
 
 	Vect3d correct_position_for_periodicity(const Vect3d& source_r, const Vect3d& to_correct_r);
