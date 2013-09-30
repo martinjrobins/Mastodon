@@ -29,74 +29,54 @@
 
 template<typename T>
 struct MultivectorTraits {
-	typedef std::shared_ptr<T> multivector_type;
+	typedef T multivector_type;
 	typedef T::value_type row_type;
 	typedef T::value_type::value_type element_type;
 	typedef Vector<element_type> position_type;
 	typedef unsigned int index_type;
 	typedef element_type interaction_radius_type;
 
-	static index_type get_number_of_rows(const multivector_type v) {return v->size();}
+	static index_type get_number_of_rows(const multivector_type& v) {return v->size();}
 	static index_type get_number_of_elements(const row_type& r) {return r->size();}
-	static row_type& get_row(multivector_type v, int i) {return *v[i];}
+	static row_type& get_row(multivector_type& v, int i) {return *v[i];}
 	static element_type& get_element(row_type& v, int i) {return *v[i];}
 	static element_type& get_element(multivector_type& v, int i, int j) {return get_element(get_row(i),j);}
 
-	static void add_row(multivector_type v, const row_type& r) {
-		v.push_back(r);
-	}
-	static void remove_last_row(multivector_type v) {
-		v.pop_back();
-	}
 
-	static position_type get_position_vector(row_type row) {
+	static position_type get_position_vector(row_type& row) {
 		return position_type(get_element(row,0),get_element(row,1),get_element(row,2));
 	}
-	static interaction_radius_type get_interaction_radius(row_type row) {
+	static interaction_radius_type get_interaction_radius(row_type& row) {
 		return interaction_radius_type(get_element(row,3));
 	}
 };
 
-template<typename T1, typename T2>
-struct TopologyTraits: MultivectorTraits<T1> {
+template<typename T>
+struct GraphTraits {
+	typedef T graph_type;
+	typedef T::value_type row_type;
+	typedef T::value_type::value_type index_type;
 
-	typedef MultivectorTraits<T1> Traits;
-	typedef Traits::multivector_type multivector_type;
-	typedef Traits::row_type row_type;
-	typedef Traits::element_type element_type;
-	typedef Traits::index_type index_type;
-	typedef Traits::position_type position_type;
-	typedef Traits::interaction_radius_type interaction_radius_type;
+	static index_type get_number_of_rows(const graph_type& v) {return v->size();}
+	static index_type get_number_of_elements(const row_type& r) {return r->size();}
+	static void add_edge(row_type& r, index_type j) {r.push_back(j);}
+	static void remove_all_edges(row_type& r) {r.clear();}
+	static row_type& get_row(graph_type& v, int i) {return *v[i];}
+	static index_type& get_element(row_type& v, int i) {return *v[i];}
+	static index_type& get_element(graph_type& v, int i, int j) {return get_element(get_row(i),j);}
 
-	typedef std::shared_ptr<T2> topology_type;
-	typedef unsigned int id_type;
-	typedef std::vector<id_type> id_container_type;
+	static graph_type create_graph(index_type number_of_rows);
 
-	static void begin_fill(topology_type topology, position_type lower_left_corner, position_type upper_right_corner) {
+
+	static position_type get_position_vector(row_type& row) {
+		return position_type(get_element(row,0),get_element(row,1),get_element(row,2));
 	}
-
-	static void finalise_fill(topology_type topology) {
-	}
-
-	static void restart_fill(topology_type topology) {
-	}
-
-	static void embed_point(topology_type topology, position_type position, id_type id) {
-			topology.embed_source_positions(source);
-		}
-
-	static id_container_type find_neighbours(topology_type topology, position_type position) {
-			return topology.find_neighbours(destination,i);
-		}
-
-	static void embed_source_positions(topology_type topology, multivector_type source) {
-		topology.embed_source_positions(source);
-	}
-
-	static multivector_type find_neighbours(topology_type topology, multivector_type destination, index_type i) {
-		return topology.find_neighbours(destination,i);
+	static interaction_radius_type get_interaction_radius(row_type& row) {
+		return interaction_radius_type(get_element(row,3));
 	}
 };
+
+
 
 
 

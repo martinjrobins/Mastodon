@@ -27,8 +27,12 @@
 
 #include "Traits.h"
 
-template<typename F, typename T1, typename T2, typename Traits=TopologyTraits<T1,T2> >
-void for_each_neighbours(multivector_type input, multivector_type output, F function, topology_type topology=topology_type()) {
+#include "BucketSort.h"
+
+namespace Mastodon {
+
+template<typename F, typename T1, typename T2, typename MTraits=MultivectorTraits<T1>, typename GTraits=GraphTraits<T2> >
+void for_each_neighbours(T1& input, T1& output, F function, T2& graph) {
 	index_type nr = Traits::get_number_of_rows(output);
 	Traits::embed_source_positions(topology,input);
 	for (index_type i = 0; i < nr; ++i) {
@@ -37,16 +41,42 @@ void for_each_neighbours(multivector_type input, multivector_type output, F func
 	}
 }
 
+template<typename T1, typename T2, typename MTraits=MultivectorTraits<T1>, typename GTraits=GraphTraits<T2> >
+void find_nearest_neighbours(T1& input, T1& output, T2& graph) {
+	typedef GTraits::index_type index_type;
+	typedef MTraits::position_type position_type;
+	const index_type ni = MTraits::get_number_of_rows(input);
+	position_type min(100,100,100),max(-100,-100,-100);
+	double maxh = -100;
+	for (index_type i = 0; i < ni; ++i) {
+		const position_type p = MTraits::get_position_vector(MTraits::get_row(input,i));
+		const double h = MTraits::get_interaction_radius(MTraits::get_row(input,i));
+		for (int d = 0; d < 3; ++d) {
+			if (p[d]<min[d]) min[d] = p[d];
+			if (p[d]>max[d]) max[d] = p[d];
+			if (h > maxh) maxh = h;
+		}
+	}
+	BucketSort<T1,T2> bucket_sort;
+	bucket_sort.reset(min,max,maxh);
+	bucket_sort.embed_source_positions(input);
+	const index_type no = MTraits::get_number_of_rows(output);
+
+	for (index_type i = 0; i < no; ++i) {
+		bucket_sort.find_broadphase_neighbours(MTraits::get_position_vector(MTraits::get_row(output,i)),GTraits::get_row(graph,i));
+	}
+}
+
 
 template<typename F, typename T, typename Traits=BaseTraits<T> >
-void for_each(multivector_type input, multivector_type output, F function) {
+void for_each(T& input, T& output, F function) {
 	index_type n = Traits::get_number_of_rows(output);
 	for (index_type i = 0; i < n; ++i) {
 		function(Traits::get_row(output,i),Traits::get_row(output,i),i);
 	}
 }
 
-
+}
 
 
 #endif /* ALGORITHMS_H_ */

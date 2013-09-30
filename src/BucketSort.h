@@ -32,11 +32,14 @@ namespace Mastodon {
 
 const int CELL_EMPTY = -1;
 
-template<typename T, typename Traits=MultivectorTraits<T> >
+template<typename T1, typename T2, typename MTraits=MultivectorTraits<T1>, typename GTraits=GraphTraits<T2> >
 class BucketSort {
 public:
-	typedef Traits::position_type Vect3d;
-	typedef Traits::multivector_type multivector_type;
+	typedef MTraits::position_type Vect3d;
+	typedef MTraits::multivector_type multivector_type;
+	typedef GTraits::graph_type graph_type;
+	typedef GTraits::row_type row_type;
+	typedef GTraits::index_type index_type;
 	typedef Vector<bool> Vect3b;
 	typedef Vector<int> Vect3i;
 
@@ -57,8 +60,8 @@ public:
 	inline const Vect3d& get_low() {return low;}
 	inline const Vect3d& get_high() {return high;}
 
-	void embed_source_positions(multivector_type &positions);
-	multivector_type find_neighbours(multivector_type destination, Traits::index_type i);
+	void embed_source_positions(multivector_type& positions);
+	multivector_type find_broadphase_neighbours(Vect3d& position, row_type& row);
 	//std::vector<int>& find_broadphase_neighbours(const Vect3d& r, const int my_index, const bool self);
 
 	Vect3d correct_position_for_periodicity(const Vect3d& source_r, const Vect3d& to_correct_r);
