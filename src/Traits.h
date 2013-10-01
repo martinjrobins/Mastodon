@@ -36,19 +36,39 @@ struct MultivectorTraits {
 	typedef unsigned int index_type;
 	typedef element_type interaction_radius_type;
 
-	static index_type get_number_of_rows(const multivector_type& v) {return v->size();}
-	static index_type get_number_of_elements(const row_type& r) {return r->size();}
-	static row_type& get_row(multivector_type& v, int i) {return *v[i];}
-	static element_type& get_element(row_type& v, int i) {return *v[i];}
+	static index_type get_number_of_rows(const multivector_type& v) {return GET_NUMBER_OF_ROWS_NOT_IMPLEMENTED;}
+	static index_type get_number_of_elements(const row_type& r) {return GET_NUMBER_OF_ELEMENTS_NOT_IMPLEMENTED;}
+	static row_type& get_row(multivector_type& v, int i) {return GET_ROW_NOT_IMPLEMENTED;}
+	static element_type& get_element(row_type& v, int i) {return GET_ELEMENT_NOT_IMPLEMENTED;}
 	static element_type& get_element(multivector_type& v, int i, int j) {return get_element(get_row(i),j);}
+	static bool same_multivector(const multivector_type& v1, const multivector_type& v2) {return SAME_MULTIVECTOR_NOT_IMPLEMENTED;}
 
+	static position_type get_position_vector(row_type& row) {
+		return GET_POSITION_VECTOR_NOT_IMPLEMENTED;
+	}
+
+};
+
+template<>
+struct MultivectorTraits<std::vector<std::vector<double> > > {
+	typedef std::vector<std::vector<double> > T;
+	typedef T multivector_type;
+	typedef T::value_type row_type;
+	typedef T::value_type::value_type element_type;
+	typedef Vector<element_type> position_type;
+	typedef unsigned int index_type;
+	typedef element_type interaction_radius_type;
+
+	static index_type get_number_of_rows(const multivector_type& v) {return v.size();}
+	static index_type get_number_of_elements(const row_type& r) {return r.size();}
+	static row_type& get_row(multivector_type& v, int i) {return v[i];}
+	static element_type& get_element(row_type& v, int i) {return v[i];}
+	static bool same_multivector(const multivector_type& v1, const multivector_type& v2) {return &v1==&v2;}
 
 	static position_type get_position_vector(row_type& row) {
 		return position_type(get_element(row,0),get_element(row,1),get_element(row,2));
 	}
-	static interaction_radius_type get_interaction_radius(row_type& row) {
-		return interaction_radius_type(get_element(row,3));
-	}
+
 };
 
 template<typename T>
@@ -67,13 +87,6 @@ struct GraphTraits {
 
 	static graph_type create_graph(index_type number_of_rows);
 
-
-	static position_type get_position_vector(row_type& row) {
-		return position_type(get_element(row,0),get_element(row,1),get_element(row,2));
-	}
-	static interaction_radius_type get_interaction_radius(row_type& row) {
-		return interaction_radius_type(get_element(row,3));
-	}
 };
 
 

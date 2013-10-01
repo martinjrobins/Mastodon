@@ -26,7 +26,8 @@
 #define ALGORITHMS_H_
 
 #include "Traits.h"
-
+#include <math.h>
+#include <memory>
 #include "BucketSort.h"
 
 namespace Mastodon {
@@ -41,30 +42,76 @@ void for_each_neighbours(T1& input, T1& output, F function, T2& graph) {
 	}
 }
 
+
+
 template<typename T1, typename T2, typename MTraits=MultivectorTraits<T1>, typename GTraits=GraphTraits<T2> >
-void find_nearest_neighbours(T1& input, T1& output, T2& graph) {
+void find_nearest_neighbours(T1& input, T1& output, T2& graph, MTraits::index_type interaction_radius_column, std::unique_ptr<BucketSort<T1> >& bucket_sort) {
 	typedef GTraits::index_type index_type;
 	typedef MTraits::position_type position_type;
 	const index_type ni = MTraits::get_number_of_rows(input);
 	position_type min(100,100,100),max(-100,-100,-100);
 	double maxh = -100;
 	for (index_type i = 0; i < ni; ++i) {
+		GTraits::remove_all_edges(MTraits::get_row(graph,i));
 		const position_type p = MTraits::get_position_vector(MTraits::get_row(input,i));
-		const double h = MTraits::get_interaction_radius(MTraits::get_row(input,i));
+		const double h = MTraits::get_element(MTraits::get_row(input,i),interaction_radius_column);
 		for (int d = 0; d < 3; ++d) {
 			if (p[d]<min[d]) min[d] = p[d];
 			if (p[d]>max[d]) max[d] = p[d];
 			if (h > maxh) maxh = h;
 		}
 	}
-	BucketSort<T1,T2> bucket_sort;
-	bucket_sort.reset(min,max,maxh);
-	bucket_sort.embed_source_positions(input);
+	bucket_sort->update(min,max,maxh);
+	bucket_sort->embed_source_positions(input);
 	const index_type no = MTraits::get_number_of_rows(output);
+	bool self = MTraits::same_multivector(input,output);
+	if (self) {
+		for (index_type i = 0; i < no; ++i) {
+			GTraits::row_type graph_row = GTraits::get_row(graph,i);
+			const position_type ri = MTraits::get_position_vector(MTraits::get_row(output,i));
+			const double hi =  MTraits::get_element(MTraits::get_row(input,i),interaction_radius_column);
+			bool found_self = false;
+			for (auto iterator = bucket_sort->get_broadphase_neighbours(ri);
+					iterator != bucket_sort->end(); ++iterator) {
+				if (found_self) {
+					const index_type j = *iterator;
+					const position_type rj = MTraits::get_position_vector(MTraits::get_row(output,j));
+					const double hj = MTraits::get_element(MTraits::get_row(input,j),interaction_radius_column);
+					const double maxh2 = pow(std::max(hi,hj),2);
+					if ((ri-rj).squaredNorm() < maxh2) {
+						GTraits::add_edge(graph_row, j);
+						GTraits::add_edge(GTraits::get_row(graph,j), i);
+					}
+				} else if (i==*iterator) {
+					found_self = true;
+				}
+			}
+		}
 
-	for (index_type i = 0; i < no; ++i) {
-		bucket_sort.find_broadphase_neighbours(MTraits::get_position_vector(MTraits::get_row(output,i)),GTraits::get_row(graph,i));
+	} else {
+		for (index_type i = 0; i < no; ++i) {
+			GTraits::row_type graph_row = GTraits::get_row(graph,i);
+			const position_type ri = MTraits::get_position_vector(MTraits::get_row(output,i));
+			const double hi =  MTraits::get_element(MTraits::get_row(input,i),interaction_radius_column);
+			for (auto iterator = bucket_sort->get_broadphase_neighbours(ri);
+					iterator != bucket_sort->end(); ++iterator) {
+				const index_type j = *iterator;
+				const position_type rj = MTraits::get_position_vector(MTraits::get_row(output,j));
+				const double hj = MTraits::get_element(MTraits::get_row(input,j),interaction_radius_column);
+				const double maxh2 = pow(std::max(hi,hj),2);
+				if ((ri-rj).squaredNorm() < maxh2) {
+					GTraits::add_edge(graph_row, j);
+				}
+			}
+		}
 	}
+}
+
+template<typename T1, typename T2, typename MTraits=MultivectorTraits<T1>, typename GTraits=GraphTraits<T2> >
+std::unique_ptr<BucketSort<T1> > find_nearest_neighbours(T1& input, T1& output, T2& graph, MTraits::index_type interaction_radius_column) {
+	std::unique_ptr<BucketSort<T1> > bucket_sort(new BucketSort<T1>);
+	find_nearest_neighbours(input,output,graph,interaction_radius_column, bucket_sort);
+	return bucket_sort;
 }
 
 
